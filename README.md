@@ -124,6 +124,12 @@ After the new package looks correct, run `./build-all.sh` for a full refresh whe
 
 This repository includes a manual two-step workflow for package updates:
 
+Prerequisite in repository settings:
+
+- `Settings -> Actions -> General -> Workflow permissions`
+- Set `Read and write permissions`
+- Enable `Allow GitHub Actions to create and approve pull requests`
+
 1. **Discover Package Updates** (`.github/workflows/discover-updates.yml`)
    - Trigger manually from the Actions tab
    - Scans all packages, resolves latest releases, computes hashes, and writes `updates/proposal.json`
