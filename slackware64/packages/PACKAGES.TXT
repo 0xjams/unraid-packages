@@ -18,42 +18,6 @@ atuin:
 atuin:
 atuin:
 
-PACKAGE NAME: atuin-18.6.1-x86_64-1_unRAID.txz
-PACKAGE LOCATION: ./atuin-18.6.1-x86_64-1_unRAID.txz
-PACKAGE SIZE (compressed): 8684196
-PACKAGE SIZE (uncompressed): 37552142
-PACKAGE DESCRIPTION:
-     |-----handy-ruler------------------------------------------------------|
-atuin: atuin (shell history manager)
-atuin:
-atuin: Atuin replaces your existing shell history with a SQLite database,
-atuin: and records additional context for your commands. Additionally, it
-atuin: provides optional and fully encrypted synchronisation of your history
-atuin: between machines, via an Atuin server.
-atuin:
-atuin: Homepage: https://github.com/atuinsh/atuin
-atuin:
-atuin:
-atuin:
-
-PACKAGE NAME: chezmoi-2.62.5-x86_64-1_unRAID.txz
-PACKAGE LOCATION: ./chezmoi-2.62.5-x86_64-1_unRAID.txz
-PACKAGE SIZE (compressed): 8430508
-PACKAGE SIZE (uncompressed): 32095493
-PACKAGE DESCRIPTION:
-       |-----handy-ruler------------------------------------------------------|
-chezmoi: chezmoi (dotfiles manager)
-chezmoi:
-chezmoi: Manage your dotfiles across multiple diverse machines, securely.
-chezmoi: chezmoi helps you manage your personal configuration files (dotfiles,
-chezmoi: like ~/.gitconfig) across multiple machines.
-chezmoi:
-chezmoi: Homepage: https://github.com/twpayne/chezmoi
-chezmoi:
-chezmoi:
-chezmoi:
-chezmoi:
-
 PACKAGE NAME: chezmoi-2.69.4-x86_64-1_unRAID.txz
 PACKAGE LOCATION: ./chezmoi-2.69.4-x86_64-1_unRAID.txz
 PACKAGE SIZE (compressed): 9671884

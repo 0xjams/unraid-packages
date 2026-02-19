@@ -37,11 +37,52 @@ fi
 
 sorted_packages=$(printf '%s\n' "${packages[@]}" | sort)
 
+latest_packages=$(printf '%s\n' "$sorted_packages" | python3 -c '
+import re
+import sys
+
+def version_key(version):
+    parts = re.findall(r"[0-9]+|[A-Za-z]+", version)
+    key = []
+    for part in parts:
+        if part.isdigit():
+            key.append((1, int(part)))
+        else:
+            key.append((0, part))
+    return key
+
+latest = {}
+for raw in sys.stdin:
+    pkg = raw.strip()
+    if not pkg or not pkg.endswith(".txz"):
+        continue
+    stem = pkg[:-4]
+    parts = stem.rsplit("-", 3)
+    if len(parts) != 4:
+        continue
+    name, version, _arch, build = parts
+    m = re.match(r"^[0-9]+", build)
+    if not m:
+        continue
+    candidate = (version_key(version), int(m.group(0)), pkg)
+    current = latest.get(name)
+    if current is None or candidate > current:
+        latest[name] = candidate
+
+for name in sorted(latest):
+    print(latest[name][2])
+')
+
+if [ -z "$latest_packages" ]; then
+  echo "No valid package names found in $REPO_DIR"
+  exit 1
+fi
+
 echo "Generating PACKAGES.TXT..."
 {
   echo "PACKAGES.TXT; $DATE_HEADER"
   echo ""
-  for pkg in $sorted_packages; do
+  for pkg in $latest_packages; do
     COMPRESSED_SIZE=$(wc -c < "$pkg" | tr -d ' ')
     UNCOMPRESSED_SIZE=$(python3 - "$pkg" <<'PY'
 import sys
@@ -90,10 +131,10 @@ PY
 
 echo "Generating CHECKSUMS.md5..."
 if command -v md5sum >/dev/null 2>&1; then
-  md5sum $sorted_packages > CHECKSUMS.md5
+  md5sum $latest_packages > CHECKSUMS.md5
 else
   {
-    for pkg in $sorted_packages; do
+    for pkg in $latest_packages; do
       printf '%s  %s\n' "$(md5 -q "$pkg")" "$pkg"
     done
   } > CHECKSUMS.md5
@@ -101,7 +142,7 @@ fi
 
 echo "Generating MANIFEST.bz2..."
 {
-  for pkg in $sorted_packages; do
+  for pkg in $latest_packages; do
     echo "++=========================================="
     echo "||   Package: $pkg"
     echo "++=========================================="
@@ -126,7 +167,7 @@ PY
   echo "maintained by <hi(at)0xjams(dot)com>"
   echo ""
 
-  file_listing=$(printf '%s\n' "$sorted_packages" CHECKSUMS.md5 MANIFEST.bz2 PACKAGES.TXT | sort)
+  file_listing=$(printf '%s\n' "$latest_packages" CHECKSUMS.md5 MANIFEST.bz2 PACKAGES.TXT | sort)
   for file in $file_listing; do
     SIZE=$(wc -c < "$file" | tr -d ' ')
     printf '%s\n' "-rw-r--r-- 1 root root $SIZE $FILELIST_DATE ./$file"
