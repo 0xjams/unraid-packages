@@ -1,11 +1,13 @@
-Wed Feb 11 23:26:00 UTC 2026
+Tue Feb 17 18:27:21 UTC 2026
 
 Here is the file list for https://github.com/0xjams/unraid-packages,
 maintained by <hi(at)0xjams(dot)com>
 
--rw-r--r-- 1 root root 203 Feb 11 2026 ./CHECKSUMS.md5
--rw-r--r-- 1 root root 488 Feb 11 2026 ./MANIFEST.bz2
--rw-r--r-- 1 root root 1747 Feb 11 2026 ./PACKAGES.TXT
--rw-r--r-- 1 root root 6778008 Feb 11 2026 ./atuin-18.12.1-x86_64-1_unRAID.txz
--rw-r--r-- 1 root root 9671884 Feb 11 2026 ./chezmoi-2.69.4-x86_64-1_unRAID.txz
--rw-r--r-- 1 root root 1472804 Feb 11 2026 ./just-1.46.0-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 339 Feb 17 2026 ./CHECKSUMS.md5
+-rw-r--r-- 1 root root 655 Feb 17 2026 ./MANIFEST.bz2
+-rw-r--r-- 1 root root 2968 Feb 17 2026 ./PACKAGES.TXT
+-rw-r--r-- 1 root root 6778008 Feb 17 2026 ./atuin-18.12.1-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 9671884 Feb 17 2026 ./chezmoi-2.69.4-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 1472804 Feb 17 2026 ./just-1.46.0-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 18949900 Feb 17 2026 ./rclone-1.73.1-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 8076972 Feb 17 2026 ./restic-0.18.1-x86_64-1_unRAID.txz

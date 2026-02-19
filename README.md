@@ -7,6 +7,8 @@ Auto-maintained Slackware packages for UnRAID, compatible with [un-get](https://
 - **Atuin** - Shell history manager
 - **Chezmoi** - Dotfiles manager
 - **just** - Command runner
+- **restic** - Fast, secure backup program
+- **rclone** - Cloud storage sync tool
 
 ## Installation
 
@@ -34,6 +36,8 @@ Each package has a lock file that pins immutable build inputs:
 - `packages/atuin/source.lock`
 - `packages/chezmoi/source.lock`
 - `packages/just/source.lock`
+- `packages/restic/source.lock`
+- `packages/rclone/source.lock`
 
 Each lock stores:
 
@@ -53,27 +57,68 @@ Each lock stores:
 
 ### Add a new binary package
 
+Use `add-package.sh` to scaffold a package and pin it from GitHub releases:
+
 ```bash
 ./scripts/add-package.sh <name> <owner/repo> '<asset-template>' [homepage] [short-description]
 ```
 
-Example for `just`:
+The asset template supports:
+
+- `{{VERSION}}` (tag without leading `v`)
+- `{{TAG}}` (full tag, such as `v1.2.3`)
+
+Example (`rclone`):
 
 ```bash
-./scripts/add-package.sh just casey/just 'just-{{VERSION}}-x86_64-unknown-linux-musl.tar.gz' https://github.com/casey/just 'command runner'
+./scripts/add-package.sh rclone rclone/rclone 'rclone-v{{VERSION}}-linux-amd64.zip' https://github.com/rclone/rclone 'cloud storage sync tool'
 ```
 
-Then run:
+What this does automatically:
+
+1. Creates `packages/<name>/` with `package.conf`, `build.sh`, `<name>.SlackBuild`, and `slack-desc`
+2. Runs `./scripts/update-locks.sh` to generate/update `packages/<name>/source.lock`
+
+Then follow this workflow:
+
+1. **Review package config and lock pinning**
+   - Confirm `packages/<name>/package.conf`
+   - Confirm `packages/<name>/source.lock` (`RELEASE_TAG`, `SOURCE_COMMIT`, `SOURCE_SHA256`, `SOURCE_DATE_EPOCH`)
+2. **Adjust extraction logic if needed**
+   - The default deterministic builder expects tarball-style archives
+   - If upstream ships another format (for example `.zip` or `.bz2`), customize `packages/<name>/<name>.SlackBuild`
+3. **Build only the new package first**
 
 ```bash
-./build-all.sh
+cd packages/<name>
+./build.sh
 ```
 
-Review and commit lock-file changes, then run:
+4. **Regenerate repository metadata**
 
 ```bash
-./build-all.sh
+cd ../..
+SOURCE_DATE_EPOCH=$(python3 - <<'PY'
+import glob
+
+max_epoch = 0
+for path in glob.glob('packages/*/source.lock'):
+    with open(path, encoding='utf-8') as handle:
+        for line in handle:
+            if line.startswith('SOURCE_DATE_EPOCH='):
+                max_epoch = max(max_epoch, int(line.strip().split('=', 1)[1]))
+                break
+print(max_epoch)
+PY
+) ./scripts/update-repo.sh
 ```
+
+5. **Verify index entries**
+   - Check `slackware64/packages/PACKAGES.TXT`
+   - Check `slackware64/packages/CHECKSUMS.md5`
+   - Check `slackware64/packages/FILELIST.TXT`
+
+After the new package looks correct, run `./build-all.sh` for a full refresh when desired.
 
 To build without refreshing locks (for strict reruns):
 

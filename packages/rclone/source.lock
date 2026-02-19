@@ -1,0 +1,7 @@
+VERSION=1.73.1
+RELEASE_TAG=v1.73.1
+SOURCE_REPOSITORY=rclone/rclone
+SOURCE_COMMIT=c7dab94e94641a036e856b21782affd29fad2aab
+SOURCE_URL=https://github.com/rclone/rclone/releases/download/v1.73.1/rclone-v1.73.1-linux-amd64.zip
+SOURCE_SHA256=e9bad0be2ed85128e0d977bf36c165dd474a705ea950d18e1005cef98119407b
+SOURCE_DATE_EPOCH=1771352841

@@ -1,4 +1,4 @@
-PACKAGES.TXT; Wed Feb 11 23:26:00 UTC 2026
+PACKAGES.TXT; Tue Feb 17 18:27:21 UTC 2026
 
 PACKAGE NAME: atuin-18.12.1-x86_64-1_unRAID.txz
 PACKAGE LOCATION: ./atuin-18.12.1-x86_64-1_unRAID.txz
@@ -50,4 +50,36 @@ just:
 just:
 just:
 just:
+
+PACKAGE NAME: rclone-1.73.1-x86_64-1_unRAID.txz
+PACKAGE LOCATION: ./rclone-1.73.1-x86_64-1_unRAID.txz
+PACKAGE SIZE (compressed): 18949900
+PACKAGE SIZE (uncompressed): 79139099
+PACKAGE DESCRIPTION:
+     |-----handy-ruler------------------------------------------------------|
+rclone: rclone (cloud storage sync tool)
+rclone:
+rclone: rclone syncs files to and from local filesystems and many cloud
+rclone: object storage providers. It supports checksums, encryption,
+rclone: transfer verification, and advanced copy/sync operations.
+rclone:
+rclone: Homepage: https://github.com/rclone/rclone
+rclone:
+rclone:
+
+PACKAGE NAME: restic-0.18.1-x86_64-1_unRAID.txz
+PACKAGE LOCATION: ./restic-0.18.1-x86_64-1_unRAID.txz
+PACKAGE SIZE (compressed): 8076972
+PACKAGE SIZE (uncompressed): 30877283
+PACKAGE DESCRIPTION:
+     |-----handy-ruler------------------------------------------------------|
+restic: restic (fast, secure backup program)
+restic:
+restic: restic is a modern backup program that can back up files to local
+restic: storage, SFTP servers, and popular cloud object stores. It supports
+restic: encrypted, deduplicated, and snapshot-based backups.
+restic:
+restic: Homepage: https://github.com/restic/restic
+restic:
+restic:
 

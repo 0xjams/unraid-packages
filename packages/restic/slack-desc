@@ -1,0 +1,17 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+     |-----handy-ruler------------------------------------------------------|
+restic: restic (fast, secure backup program)
+restic:
+restic: restic is a modern backup program that can back up files to local
+restic: storage, SFTP servers, and popular cloud object stores. It supports
+restic: encrypted, deduplicated, and snapshot-based backups.
+restic:
+restic: Homepage: https://github.com/restic/restic
+restic:
+restic:

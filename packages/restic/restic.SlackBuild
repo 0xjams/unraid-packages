@@ -1,0 +1,176 @@
+#!/bin/bash
+set -euo pipefail
+
+export LC_ALL=C
+export TZ=UTC
+umask 022
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+LOCK_FILE="$SCRIPT_DIR/source.lock"
+CONF_FILE="$SCRIPT_DIR/package.conf"
+
+if [ ! -f "$CONF_FILE" ]; then
+  echo "Missing package config: $CONF_FILE"
+  exit 1
+fi
+
+if [ ! -f "$LOCK_FILE" ]; then
+  echo "Missing lock file: $LOCK_FILE"
+  exit 1
+fi
+
+# shellcheck disable=SC1090
+. "$CONF_FILE"
+# shellcheck disable=SC1090
+. "$LOCK_FILE"
+
+PRGNAM=${PRGNAM:-restic}
+BINARY_NAME=${BINARY_NAME:-$PRGNAM}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_unRAID}
+PKGTYPE=${PKGTYPE:-txz}
+ARCH=${ARCH:-x86_64}
+OUTPUT=${OUTPUT:-/tmp}
+REPO_DIR=${REPO_DIR:-../../slackware64/packages}
+
+VERSION=${VERSION_OVERRIDE:-${VERSION}}
+SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH_OVERRIDE:-${SOURCE_DATE_EPOCH}}
+
+for required in VERSION RELEASE_TAG SOURCE_URL SOURCE_SHA256 SOURCE_DATE_EPOCH; do
+  if [ -z "${!required:-}" ]; then
+    echo "source.lock is missing required key: $required"
+    exit 1
+  fi
+done
+
+if command -v sha256sum >/dev/null 2>&1; then
+  SHA256_BIN=sha256sum
+elif command -v shasum >/dev/null 2>&1; then
+  SHA256_BIN="shasum -a 256"
+else
+  echo "sha256 checksum tool not found (need sha256sum or shasum)."
+  exit 1
+fi
+
+TMP=${TMP:-"/tmp/build-$PRGNAM"}
+PKG="$TMP/package-$PRGNAM"
+DOWNLOADS="$TMP/downloads"
+SRC_DIR="$TMP/src"
+
+echo "Building $PRGNAM version: $VERSION"
+echo "Pinned source: $SOURCE_URL"
+
+rm -rf "$TMP"
+mkdir -p "$PKG" "$OUTPUT" "$DOWNLOADS" "$SRC_DIR"
+
+ARCHIVE="${SOURCE_URL##*/}"
+ARCHIVE_PATH="$DOWNLOADS/$ARCHIVE"
+
+echo "Downloading source archive..."
+curl -L --fail --silent --show-error -o "$ARCHIVE_PATH" "$SOURCE_URL"
+
+echo "Verifying source checksum..."
+ACTUAL_SHA256=$($SHA256_BIN "$ARCHIVE_PATH" | awk '{print $1}')
+if [ "$ACTUAL_SHA256" != "$SOURCE_SHA256" ]; then
+  echo "Checksum mismatch for $ARCHIVE"
+  echo "Expected: $SOURCE_SHA256"
+  echo "Actual:   $ACTUAL_SHA256"
+  exit 1
+fi
+
+echo "Extracting restic binary..."
+bzip2 -dc "$ARCHIVE_PATH" > "$SRC_DIR/$BINARY_NAME"
+chmod 755 "$SRC_DIR/$BINARY_NAME"
+
+mkdir -p "$PKG/usr/bin"
+install -m 755 "$SRC_DIR/$BINARY_NAME" "$PKG/usr/bin/$PRGNAM"
+
+mkdir -p "$PKG/usr/doc/$PRGNAM-$VERSION"
+cp -a "$SCRIPT_DIR/$PRGNAM.SlackBuild" "$PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild"
+
+mkdir -p "$PKG/install"
+cat "$SCRIPT_DIR/slack-desc" > "$PKG/install/slack-desc"
+
+python3 - "$PKG" "$SOURCE_DATE_EPOCH" <<'PY'
+import os
+import stat
+import sys
+
+root = sys.argv[1]
+epoch = int(sys.argv[2])
+
+for current_root, dirs, files in os.walk(root):
+    for name in dirs + files:
+        path = os.path.join(current_root, name)
+        os.utime(path, (epoch, epoch), follow_symlinks=False)
+        mode = os.lstat(path).st_mode
+        if stat.S_ISDIR(mode):
+            os.chmod(path, 0o755)
+        elif mode & 0o111:
+            os.chmod(path, 0o755)
+        else:
+            os.chmod(path, 0o644)
+os.utime(root, (epoch, epoch), follow_symlinks=False)
+PY
+
+PACKAGE_FILE="$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+
+echo "Creating deterministic package $PACKAGE_FILE..."
+python3 - "$PKG" "$OUTPUT/$PACKAGE_FILE" "$SOURCE_DATE_EPOCH" <<'PY'
+import os
+import stat
+import sys
+import tarfile
+
+root = os.path.abspath(sys.argv[1])
+output = sys.argv[2]
+epoch = int(sys.argv[3])
+
+with tarfile.open(output, mode="w:xz", format=tarfile.GNU_FORMAT) as archive:
+    paths = []
+    for current_root, dirs, files in os.walk(root):
+        dirs.sort()
+        files.sort()
+        for dirname in dirs:
+            paths.append(os.path.join(current_root, dirname))
+        for filename in files:
+            paths.append(os.path.join(current_root, filename))
+
+    for path in sorted(paths):
+        rel = os.path.relpath(path, root)
+        arcname = f"./{rel}"
+        st = os.lstat(path)
+
+        info = tarfile.TarInfo(arcname)
+        info.uid = 0
+        info.gid = 0
+        info.uname = "root"
+        info.gname = "root"
+        info.mtime = epoch
+
+        if stat.S_ISDIR(st.st_mode):
+            info.type = tarfile.DIRTYPE
+            info.mode = 0o755
+            info.size = 0
+            archive.addfile(info)
+        elif stat.S_ISLNK(st.st_mode):
+            info.type = tarfile.SYMTYPE
+            info.mode = 0o777
+            info.linkname = os.readlink(path)
+            info.size = 0
+            archive.addfile(info)
+        elif stat.S_ISREG(st.st_mode):
+            info.type = tarfile.REGTYPE
+            info.mode = 0o755 if (st.st_mode & 0o111) else 0o644
+            info.size = st.st_size
+            with open(path, "rb") as source:
+                archive.addfile(info, source)
+PY
+
+mkdir -p "$SCRIPT_DIR/$REPO_DIR"
+mv "$OUTPUT/$PACKAGE_FILE" "$SCRIPT_DIR/$REPO_DIR/"
+
+rm -rf "$TMP"
+
+echo "$PRGNAM $VERSION built successfully"
+echo "Package: $REPO_DIR/$PACKAGE_FILE"
