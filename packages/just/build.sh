@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+PACKAGE_NAME=$(basename "$SCRIPT_DIR")
 LOCK_FILE="$SCRIPT_DIR/source.lock"
 
 if [ ! -f "$LOCK_FILE" ]; then
@@ -12,10 +13,10 @@ fi
 # shellcheck disable=SC1090
 . "$LOCK_FILE"
 
-echo "Building Atuin version: $VERSION (pinned)"
+echo "Building $PACKAGE_NAME version: ${VERSION} (pinned)"
 
 VERSION="$VERSION" \
 SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" \
-./atuin.SlackBuild
+./${PACKAGE_NAME}.SlackBuild
 
-echo "Atuin $VERSION built successfully"
+echo "$PACKAGE_NAME $VERSION built successfully"

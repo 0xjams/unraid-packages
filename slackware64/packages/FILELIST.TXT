@@ -1,11 +1,13 @@
-Mon May 26 23:22:55 -05 2025
+Wed Feb 11 23:26:00 UTC 2026
 
-Here is the file list for your https://github.com/0xjams/unraid-packages,
-maintained by <hi(at)0xjams(dot)com
+Here is the file list for https://github.com/0xjams/unraid-packages,
+maintained by <hi(at)0xjams(dot)com>
 
--rw-r--r-- 1 jorge staff 136 May 26 23:22 ./CHECKSUMS.md5
--rw-r--r-- 1 jorge staff 199 May 26 23:22 ./FILELIST.TXT
--rw-r--r-- 1 jorge staff 409 May 26 23:22 ./MANIFEST.bz2
--rw-r--r-- 1 jorge staff 1326 May 26 23:22 ./PACKAGES.TXT
--rw-r--r-- 1 jorge wheel 8684320 May 26 23:22 ./atuin-18.6.1-x86_64-1_unRAID.txz
--rw-r--r-- 1 jorge wheel 8427472 May 26 23:22 ./chezmoi-2.62.5-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 339 Feb 11 2026 ./CHECKSUMS.md5
+-rw-r--r-- 1 root root 629 Feb 11 2026 ./MANIFEST.bz2
+-rw-r--r-- 1 root root 3043 Feb 11 2026 ./PACKAGES.TXT
+-rw-r--r-- 1 root root 6778008 Feb 11 2026 ./atuin-18.12.1-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 8684196 Feb 11 2026 ./atuin-18.6.1-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 8430508 Feb 11 2026 ./chezmoi-2.62.5-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 9671884 Feb 11 2026 ./chezmoi-2.69.4-x86_64-1_unRAID.txz
+-rw-r--r-- 1 root root 1472804 Feb 11 2026 ./just-1.46.0-x86_64-1_unRAID.txz

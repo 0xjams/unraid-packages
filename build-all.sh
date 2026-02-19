@@ -1,20 +1,50 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+REPO_EPOCH=0
+
+if [ "${SKIP_LOCK_REFRESH:-0}" != "1" ]; then
+  echo "Refreshing source locks from latest GitHub releases..."
+  "$ROOT_DIR/scripts/update-locks.sh"
+fi
 
 echo "Building all packages..."
 
-cd packages/atuin
-./build.sh
-cd ../..
+for package_dir in "$ROOT_DIR"/packages/*; do
+  if [ ! -d "$package_dir" ] || [ ! -f "$package_dir/build.sh" ] || [ ! -f "$package_dir/source.lock" ]; then
+    continue
+  fi
 
-cd packages/chezmoi  
-./build.sh
-cd ../..
+  package_name=$(basename "$package_dir")
 
-rm -rf slackware64/packages/install || true
+  pkg_epoch=$(python3 - "$package_dir/source.lock" <<'PY'
+import sys
+
+lock_path = sys.argv[1]
+epoch = 0
+with open(lock_path, encoding="utf-8") as handle:
+    for line in handle:
+        if line.startswith("SOURCE_DATE_EPOCH="):
+            epoch = int(line.strip().split("=", 1)[1])
+            break
+print(epoch)
+PY
+)
+
+  if [ "$pkg_epoch" -gt "$REPO_EPOCH" ]; then
+    REPO_EPOCH="$pkg_epoch"
+  fi
+
+  echo "Building package: $package_name"
+  (
+    cd "$package_dir"
+    ./build.sh
+  )
+done
 
 echo "Updating repository metadata..."
-./scripts/update-repo.sh
+SOURCE_DATE_EPOCH="$REPO_EPOCH" ./scripts/update-repo.sh
 
 echo "All packages built successfully!"
 echo ""

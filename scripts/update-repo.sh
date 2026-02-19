@@ -1,89 +1,135 @@
 #!/bin/bash
-# Repository metadata update script - cross-platform compatible
-set -e
+# Repository metadata update script (deterministic)
+set -euo pipefail
+
+export LC_ALL=C
+export TZ=UTC
 
 REPO_DIR="slackware64/packages"
 cd "$REPO_DIR"
 
-# Generate PACKAGES.TXT
+shopt -s nullglob
+
+if [ -n "${SOURCE_DATE_EPOCH:-}" ]; then
+  BUILD_EPOCH="$SOURCE_DATE_EPOCH"
+else
+  BUILD_EPOCH=$(date -u +%s)
+fi
+
+DATE_HEADER=$(python3 - "$BUILD_EPOCH" <<'PY'
+from datetime import datetime, timezone
+import sys
+epoch = int(sys.argv[1])
+print(datetime.fromtimestamp(epoch, timezone.utc).strftime("%a %b %d %H:%M:%S UTC %Y"))
+PY
+)
+
+packages=( *.txz )
+
+if [ ${#packages[@]} -eq 0 ]; then
+  echo "No .txz files found in $REPO_DIR"
+  : > PACKAGES.TXT
+  : > CHECKSUMS.md5
+  : > FILELIST.TXT
+  : > MANIFEST.bz2
+  exit 0
+fi
+
+sorted_packages=$(printf '%s\n' "${packages[@]}" | sort)
+
 echo "Generating PACKAGES.TXT..."
 {
-  echo "PACKAGES.TXT; $(date)"
+  echo "PACKAGES.TXT; $DATE_HEADER"
   echo ""
-  for pkg in *.txz; do
-    if [ -f "$pkg" ]; then
-      echo "PACKAGE NAME: $pkg"
-      echo "PACKAGE LOCATION: ./$pkg"
-      
-      # Use portable file size detection without stat
-      SIZE=$(ls -l "$pkg" | awk '{print $5}')
-      echo "PACKAGE SIZE (compressed): $SIZE"
-      
-      # Calculate uncompressed size safely
-      UNCOMPRESSED_SIZE=$(tar -tvf "$pkg" | awk '{sum += $3} END {print sum}')
-      echo "PACKAGE SIZE (uncompressed): $UNCOMPRESSED_SIZE"
-      
-      echo "PACKAGE DESCRIPTION:"
-      
-      # Extract slack-desc safely without creating files
-      if tar -tf "$pkg" | grep -q "install/slack-desc"; then
-        # Extract to stdout only, not to filesystem
-        tar -xOf "$pkg" "install/slack-desc" 2>/dev/null | 
-          grep -v "^#" | grep -v "^$" || 
-          echo "$pkg: Error extracting description"
-      else
-        echo "$pkg: Package description not available"
-      fi
-      echo ""
+  for pkg in $sorted_packages; do
+    COMPRESSED_SIZE=$(wc -c < "$pkg" | tr -d ' ')
+    UNCOMPRESSED_SIZE=$(python3 - "$pkg" <<'PY'
+import sys
+import tarfile
+
+size = 0
+with tarfile.open(sys.argv[1], mode="r:xz") as archive:
+    for member in archive.getmembers():
+        if member.isfile():
+            size += member.size
+print(size)
+PY
+)
+
+    DESCRIPTION=$(python3 - "$pkg" <<'PY'
+import sys
+import tarfile
+
+with tarfile.open(sys.argv[1], mode="r:xz") as archive:
+    try:
+        text = archive.extractfile("./install/slack-desc").read().decode("utf-8", errors="replace")
+    except Exception:
+        try:
+            text = archive.extractfile("install/slack-desc").read().decode("utf-8", errors="replace")
+        except Exception:
+            text = ""
+
+lines = [line for line in text.splitlines() if line and not line.startswith("#")]
+print("\n".join(lines))
+PY
+)
+
+    echo "PACKAGE NAME: $pkg"
+    echo "PACKAGE LOCATION: ./$pkg"
+    echo "PACKAGE SIZE (compressed): $COMPRESSED_SIZE"
+    echo "PACKAGE SIZE (uncompressed): $UNCOMPRESSED_SIZE"
+    echo "PACKAGE DESCRIPTION:"
+    if [ -n "$DESCRIPTION" ]; then
+      printf '%s\n' "$DESCRIPTION"
+    else
+      echo "$pkg: Package description not available"
     fi
+    echo ""
   done
 } > PACKAGES.TXT
 
-# Generate CHECKSUMS.md5
 echo "Generating CHECKSUMS.md5..."
-md5sum *.txz > CHECKSUMS.md5
+if command -v md5sum >/dev/null 2>&1; then
+  md5sum $sorted_packages > CHECKSUMS.md5
+else
+  {
+    for pkg in $sorted_packages; do
+      printf '%s  %s\n' "$(md5 -q "$pkg")" "$pkg"
+    done
+  } > CHECKSUMS.md5
+fi
 
-# Generate MANIFEST.bz2 (detailed file listing)
 echo "Generating MANIFEST.bz2..."
 {
-  for pkg in *.txz; do
-    if [ -f "$pkg" ]; then
-      echo "++=========================================="
-      echo "||   Package: $pkg"
-      echo "++=========================================="
-      tar -tvf "$pkg"
-      echo ""
-    fi
+  for pkg in $sorted_packages; do
+    echo "++=========================================="
+    echo "||   Package: $pkg"
+    echo "++=========================================="
+    tar -tvf "$pkg"
+    echo ""
   done
 } | bzip2 > MANIFEST.bz2
 
-# Generate FILELIST.TXT in proper Slackware format
 echo "Generating FILELIST.TXT..."
+FILELIST_DATE=$(python3 - "$BUILD_EPOCH" <<'PY'
+from datetime import datetime, timezone
+import sys
+epoch = int(sys.argv[1])
+print(datetime.fromtimestamp(epoch, timezone.utc).strftime("%b %d %Y"))
+PY
+)
+
 {
-  # Header
-  echo "$(date +'%a %b %d %H:%M:%S %Z %Y')"
+  echo "$DATE_HEADER"
   echo ""
   echo "Here is the file list for https://github.com/0xjams/unraid-packages,"
   echo "maintained by <hi(at)0xjams(dot)com>"
   echo ""
 
-  # File listing with permissions, owner, group, size, date and relative path
-  for file in $(find . -type f | sort); do
-    # Get all file info from ls -l directly (works on both macOS and Linux)
-    fileinfo=$(ls -la "$file")
-    perms=$(echo "$fileinfo" | awk '{print $1}')
-    links=$(echo "$fileinfo" | awk '{print $2}')
-    owner=$(echo "$fileinfo" | awk '{print $3}')
-    group=$(echo "$fileinfo" | awk '{print $4}')
-    size=$(echo "$fileinfo" | awk '{print $5}')
-    
-    # Get date from ls output - the format is slightly different between macOS and Linux
-    # but using the full ls output ensures we get whatever format the system provides
-    month=$(echo "$fileinfo" | awk '{print $6}')
-    day=$(echo "$fileinfo" | awk '{print $7}')
-    yeartime=$(echo "$fileinfo" | awk '{print $8}')
-    
-    echo "$perms $links $owner $group $size $month $day $yeartime $file"
+  file_listing=$(printf '%s\n' "$sorted_packages" CHECKSUMS.md5 MANIFEST.bz2 PACKAGES.TXT | sort)
+  for file in $file_listing; do
+    SIZE=$(wc -c < "$file" | tr -d ' ')
+    printf '%s\n' "-rw-r--r-- 1 root root $SIZE $FILELIST_DATE ./$file"
   done
 } > FILELIST.TXT
 

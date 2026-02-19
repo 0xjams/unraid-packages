@@ -1,15 +1,21 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Get latest version from GitHub API
-LATEST_VERSION=$(curl -s https://api.github.com/repos/twpayne/chezmoi/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | sed 's/v//')
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+LOCK_FILE="$SCRIPT_DIR/source.lock"
 
-echo "Building Chezmoi version: $LATEST_VERSION"
+if [ ! -f "$LOCK_FILE" ]; then
+  echo "Missing lock file: $LOCK_FILE"
+  exit 1
+fi
 
-# Build the package (no need to modify the SlackBuild)
-VERSION=$LATEST_VERSION ./chezmoi.SlackBuild
+# shellcheck disable=SC1090
+. "$LOCK_FILE"
 
-# Move package to repository
-mkdir -p ../../slackware64/packages
+echo "Building Chezmoi version: $VERSION (pinned)"
 
-echo "Chezmoi $LATEST_VERSION built successfully"
+VERSION="$VERSION" \
+SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" \
+./chezmoi.SlackBuild
+
+echo "Chezmoi $VERSION built successfully"

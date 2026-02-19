@@ -1,0 +1,7 @@
+VERSION=18.12.1
+RELEASE_TAG=v18.12.1
+SOURCE_REPOSITORY=atuinsh/atuin
+SOURCE_COMMIT=42dd242541d1db21c676e213a98d50ee74bd553d
+SOURCE_URL=https://github.com/atuinsh/atuin/releases/download/v18.12.1/atuin-x86_64-unknown-linux-gnu.tar.gz
+SOURCE_SHA256=dddab3db80f9a6884c6538d9c90311b34326d1155df87bae4613cfcf8ea6351f
+SOURCE_DATE_EPOCH=1770852360
