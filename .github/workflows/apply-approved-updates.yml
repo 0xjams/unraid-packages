@@ -1,0 +1,132 @@
+name: Apply Approved Updates
+
+on:
+  workflow_dispatch:
+    inputs:
+      proposal_ref:
+        description: "Branch containing updates/proposal.json"
+        required: true
+        default: "automation/update-proposals"
+      mode:
+        description: "Dry run only or commit changes"
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - commit
+        default: dry-run
+      failure_policy:
+        description: "Continue or stop on first package failure"
+        required: true
+        type: choice
+        options:
+          - continue
+          - fail-fast
+        default: continue
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: apply-approved-updates
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout proposal ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.proposal_ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Apply proposal
+        id: apply
+        run: |
+          set +e
+          ./scripts/apply-proposal.py \
+            --repo-root . \
+            --proposal-path updates/proposal.json \
+            --summary-path updates/apply-summary.md \
+            --report-path updates/apply-result.json \
+            --failure-policy "${{ inputs.failure_policy }}"
+          exit_code=$?
+          set -e
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push changes
+        if: ${{ inputs.mode == 'commit' }}
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add packages/*/source.lock
+          git add slackware64/packages
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          commit_subject=$(python3 - <<'PY'
+          import json
+
+          with open('updates/apply-result.json', encoding='utf-8') as handle:
+              report = json.load(handle)
+
+          updated = [item['name'] for item in report.get('results', []) if item.get('result') == 'updated']
+          if updated:
+              print('chore(packages): apply approved updates for ' + ', '.join(updated))
+          else:
+              print('chore(packages): apply approved package updates')
+          PY
+          )
+
+          git commit -m "$commit_subject"
+
+          branch="${{ inputs.proposal_ref }}"
+          branch="${branch#refs/heads/}"
+          git push origin "HEAD:$branch"
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Comment results on pull request
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch="${{ inputs.proposal_ref }}"
+          branch="${branch#refs/heads/}"
+          pr_number=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+          if [ -z "$pr_number" ]; then
+            echo "No open PR found for branch '$branch'; skipping PR comment."
+            exit 0
+          fi
+
+          {
+            echo "### Apply workflow result"
+            echo ""
+            echo "- Mode: \\`${{ inputs.mode }}\\`"
+            echo "- Failure policy: \\`${{ inputs.failure_policy }}\\`"
+            echo "- Apply script exit code: \\`${{ steps.apply.outputs.exit_code }}\\`"
+            if [ -f updates/apply-summary.md ]; then
+              echo ""
+              cat updates/apply-summary.md
+            fi
+          } > updates/pr-apply-comment.md
+
+          gh pr comment "$pr_number" --body-file updates/pr-apply-comment.md
+
+      - name: Fail job on apply errors
+        if: ${{ steps.apply.outputs.exit_code != '0' }}
+        run: |
+          echo "One or more selected package updates failed."
+          exit 1

@@ -120,6 +120,28 @@ PY
 
 After the new package looks correct, run `./build-all.sh` for a full refresh when desired.
 
+### Manual update pipeline (GitHub Actions)
+
+This repository includes a manual two-step workflow for package updates:
+
+1. **Discover Package Updates** (`.github/workflows/discover-updates.yml`)
+   - Trigger manually from the Actions tab
+   - Scans all packages, resolves latest releases, computes hashes, and writes `updates/proposal.json`
+   - Creates/updates a PR from `automation/update-proposals` with `updates/discovery-summary.md`
+2. **Apply Approved Updates** (`.github/workflows/apply-approved-updates.yml`)
+   - Trigger manually after reviewing the proposal PR
+   - Reads `updates/proposal.json`, applies only `selected: true` entries, builds packages, and regenerates metadata
+   - Can run as `dry-run` or `commit`
+
+Recommended flow:
+
+1. Run **Discover Package Updates**
+2. Review/edit `updates/proposal.json` in the proposal PR (toggle `selected`, adjust values if needed)
+3. Run **Apply Approved Updates** with `proposal_ref=automation/update-proposals`
+4. Review resulting PR changes and merge manually
+
+If you decide not to proceed, close the proposal PR and no changes will land on `main`.
+
 To build without refreshing locks (for strict reruns):
 
 ```bash
