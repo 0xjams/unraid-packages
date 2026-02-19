@@ -1,0 +1,131 @@
+{
+  "base_branch": "main",
+  "packages": [
+    {
+      "current": {
+        "RELEASE_TAG": "v18.12.1",
+        "SOURCE_COMMIT": "42dd242541d1db21c676e213a98d50ee74bd553d",
+        "SOURCE_DATE_EPOCH": "1770852360",
+        "SOURCE_REPOSITORY": "atuinsh/atuin",
+        "SOURCE_SHA256": "dddab3db80f9a6884c6538d9c90311b34326d1155df87bae4613cfcf8ea6351f",
+        "SOURCE_URL": "https://github.com/atuinsh/atuin/releases/download/v18.12.1/atuin-x86_64-unknown-linux-gnu.tar.gz",
+        "VERSION": "18.12.1"
+      },
+      "name": "atuin",
+      "path": "packages/atuin",
+      "proposed": {
+        "RELEASE_TAG": "v18.12.1",
+        "SOURCE_COMMIT": "42dd242541d1db21c676e213a98d50ee74bd553d",
+        "SOURCE_DATE_EPOCH": "1770852360",
+        "SOURCE_REPOSITORY": "atuinsh/atuin",
+        "SOURCE_SHA256": "dddab3db80f9a6884c6538d9c90311b34326d1155df87bae4613cfcf8ea6351f",
+        "SOURCE_URL": "https://github.com/atuinsh/atuin/releases/download/v18.12.1/atuin-x86_64-unknown-linux-gnu.tar.gz",
+        "VERSION": "18.12.1"
+      },
+      "reason": "already pinned to latest release",
+      "selected": false,
+      "status": "up_to_date"
+    },
+    {
+      "current": {
+        "RELEASE_TAG": "v2.69.4",
+        "SOURCE_COMMIT": "c4c669c9f2f329233a85802014d26fba3c58a4a4",
+        "SOURCE_DATE_EPOCH": "1770800687",
+        "SOURCE_REPOSITORY": "twpayne/chezmoi",
+        "SOURCE_SHA256": "5054cf09cb2993725f525c8bb6ec3ff8625489ecfc061e019c17e737e7c7057b",
+        "SOURCE_URL": "https://github.com/twpayne/chezmoi/releases/download/v2.69.4/chezmoi_2.69.4_linux_amd64.tar.gz",
+        "VERSION": "2.69.4"
+      },
+      "name": "chezmoi",
+      "path": "packages/chezmoi",
+      "proposed": {
+        "RELEASE_TAG": "v2.69.4",
+        "SOURCE_COMMIT": "c4c669c9f2f329233a85802014d26fba3c58a4a4",
+        "SOURCE_DATE_EPOCH": "1770800687",
+        "SOURCE_REPOSITORY": "twpayne/chezmoi",
+        "SOURCE_SHA256": "5054cf09cb2993725f525c8bb6ec3ff8625489ecfc061e019c17e737e7c7057b",
+        "SOURCE_URL": "https://github.com/twpayne/chezmoi/releases/download/v2.69.4/chezmoi_2.69.4_linux_amd64.tar.gz",
+        "VERSION": "2.69.4"
+      },
+      "reason": "already pinned to latest release",
+      "selected": false,
+      "status": "up_to_date"
+    },
+    {
+      "current": {
+        "RELEASE_TAG": "1.46.0",
+        "SOURCE_COMMIT": "f028de5b258a0cc4696b9dea729cc7d4d5828baa",
+        "SOURCE_DATE_EPOCH": "1767336958",
+        "SOURCE_REPOSITORY": "casey/just",
+        "SOURCE_SHA256": "79966e6e353f535ee7d1c6221641bcc8e3381c55b0d0a6dc6e54b34f9db36eaa",
+        "SOURCE_URL": "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-x86_64-unknown-linux-musl.tar.gz",
+        "VERSION": "1.46.0"
+      },
+      "name": "just",
+      "path": "packages/just",
+      "proposed": {
+        "RELEASE_TAG": "1.46.0",
+        "SOURCE_COMMIT": "f028de5b258a0cc4696b9dea729cc7d4d5828baa",
+        "SOURCE_DATE_EPOCH": "1767336958",
+        "SOURCE_REPOSITORY": "casey/just",
+        "SOURCE_SHA256": "79966e6e353f535ee7d1c6221641bcc8e3381c55b0d0a6dc6e54b34f9db36eaa",
+        "SOURCE_URL": "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-x86_64-unknown-linux-musl.tar.gz",
+        "VERSION": "1.46.0"
+      },
+      "reason": "already pinned to latest release",
+      "selected": false,
+      "status": "up_to_date"
+    },
+    {
+      "current": {
+        "RELEASE_TAG": "v1.73.1",
+        "SOURCE_COMMIT": "c7dab94e94641a036e856b21782affd29fad2aab",
+        "SOURCE_DATE_EPOCH": "1771352841",
+        "SOURCE_REPOSITORY": "rclone/rclone",
+        "SOURCE_SHA256": "e9bad0be2ed85128e0d977bf36c165dd474a705ea950d18e1005cef98119407b",
+        "SOURCE_URL": "https://github.com/rclone/rclone/releases/download/v1.73.1/rclone-v1.73.1-linux-amd64.zip",
+        "VERSION": "1.73.1"
+      },
+      "name": "rclone",
+      "path": "packages/rclone",
+      "proposed": {
+        "RELEASE_TAG": "v1.73.1",
+        "SOURCE_COMMIT": "c7dab94e94641a036e856b21782affd29fad2aab",
+        "SOURCE_DATE_EPOCH": "1771352841",
+        "SOURCE_REPOSITORY": "rclone/rclone",
+        "SOURCE_SHA256": "e9bad0be2ed85128e0d977bf36c165dd474a705ea950d18e1005cef98119407b",
+        "SOURCE_URL": "https://github.com/rclone/rclone/releases/download/v1.73.1/rclone-v1.73.1-linux-amd64.zip",
+        "VERSION": "1.73.1"
+      },
+      "reason": "already pinned to latest release",
+      "selected": false,
+      "status": "up_to_date"
+    },
+    {
+      "current": {
+        "RELEASE_TAG": "v0.18.1",
+        "SOURCE_COMMIT": "7d0aa7f2e30546fba7c8f1c0bae4d6704e3d8423",
+        "SOURCE_DATE_EPOCH": "1758479078",
+        "SOURCE_REPOSITORY": "restic/restic",
+        "SOURCE_SHA256": "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d",
+        "SOURCE_URL": "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2",
+        "VERSION": "0.18.1"
+      },
+      "name": "restic",
+      "path": "packages/restic",
+      "proposed": {
+        "RELEASE_TAG": "v0.18.1",
+        "SOURCE_COMMIT": "7d0aa7f2e30546fba7c8f1c0bae4d6704e3d8423",
+        "SOURCE_DATE_EPOCH": "1758479078",
+        "SOURCE_REPOSITORY": "restic/restic",
+        "SOURCE_SHA256": "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d",
+        "SOURCE_URL": "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2",
+        "VERSION": "0.18.1"
+      },
+      "reason": "already pinned to latest release",
+      "selected": false,
+      "status": "up_to_date"
+    }
+  ],
+  "schema_version": 1
+}
